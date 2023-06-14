@@ -85,3 +85,17 @@ from (select distinct year from movies) y join
 group by y.year
 order by count(*) ASC
 limit 10;
+
+--the most popular movie genre in each decade--
+SELECT [Year]/10*10 as [Decade]
+     , COUNT(*) as [genre]
+FROM Movies
+GROUP BY [Year]/10*10
+ORDER BY [genre] DESC
+
+--how many movies in each decade, An alternative--
+SELECT [Year]/10*10 as [Decade]
+     , COUNT(*) as [CountMovies]
+FROM Movies
+GROUP BY [Year]/10*10
+ORDER BY [CountMovies] DESC
