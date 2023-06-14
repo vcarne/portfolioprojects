@@ -99,3 +99,31 @@ SELECT [Year]/10*10 as [Decade]
 FROM Movies
 GROUP BY [Year]/10*10
 ORDER BY [CountMovies] DESC
+
+--most popular movie genre in each decade--
+WITH genre_counts AS (
+  SELECT genre, COUNT(*) AS genre_count, year
+  FROM (
+    SELECT TRIM(value) AS genre, year
+    FROM Movies
+    CROSS JOIN json_each('["' || REPLACE(genre, ',', '","') || '"]')
+  )
+  GROUP BY genre, year
+), decade_max_genre AS (
+  SELECT d.decade_start, d.decade_end, gc.genre,
+         ROW_NUMBER() OVER (PARTITION BY d.decade_start ORDER BY gc.genre_count DESC) AS rn
+  FROM (
+    SELECT 
+      year/10 * 10 + 1 AS decade_start,
+      year/10 * 10 + 10 AS decade_end
+    FROM Movies
+    GROUP BY year/10
+  ) d
+  JOIN genre_counts gc ON gc.year >= d.decade_start AND gc.year <= d.decade_end
+)
+SELECT decade_start, decade_end, genre
+FROM decade_max_genre
+WHERE rn = 1
+ORDER BY decade_start
+
+
